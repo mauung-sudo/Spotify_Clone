@@ -60,7 +60,7 @@ const Container = styled.div`
 
   .spotify__Body {
     display: grid;
-    grid-template-columns: 15vw 18vw;
+    grid-template-columns: 15vw 85vw;
     width: 100%;
     height: 100%;
     background: linear-gradient(transparent, rgba(0, 0, 0, 1));
