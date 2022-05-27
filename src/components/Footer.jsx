@@ -1,8 +1,10 @@
 import React from "react";
 
 import styled from "styled-components";
+import CurrentTrack from "./CurrentTrack";
+
 const Footer = () => {
-  return <Container>Footer</Container>;
+  return <Container><CurrentTrack/></Container>;
 };
 const Container = styled.div`
   background-color: #181818;

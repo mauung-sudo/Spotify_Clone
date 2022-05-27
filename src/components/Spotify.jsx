@@ -19,7 +19,7 @@ export default function Spotify() {
 
   const bodyScrolled = () => {
 
-    bodyRef.current.scrollTop >= 20
+    bodyRef.current.scrollTop >= 8
       ? setNavBackground(true)
       : setNavBackground(false);
 
