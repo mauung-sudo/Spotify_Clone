@@ -7,6 +7,9 @@ import { useStateProvider } from "../utils/StateProvider";
 export default function Playlist() {
   const [{ token, playlist }, dispatch] = useStateProvider();
 
+  //- GET playlist (name,id)
+  //- dispatch playlist to StateProvider
+
   useEffect(() => {
     const getPlaylistData = async () => {
       const response = await axios.get(
