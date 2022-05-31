@@ -18,7 +18,7 @@ function App() {
   },[token, dispatch]);
 
   return (
-    <div>
+    <div className='App'>
       {token ? <Spotify/> : <Login/>}
     </div>
   )

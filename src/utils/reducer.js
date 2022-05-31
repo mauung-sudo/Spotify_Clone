@@ -7,9 +7,12 @@ export const initialState = {
   selectedPlaylistId: "7lkK4JetCQXMhJXyxwUWyp",
   selectedPlaylist: null,
   currentlyPlaying: null,
+  playerState: false,
+  currentTrackLyrics: null,
 };
 
 const reducer = (state, action) => {
+
   switch (action.type) {
     case reducerCases.SET_TOKEN: {
       return {
@@ -44,9 +47,24 @@ const reducer = (state, action) => {
       };
     }
 
+    case reducerCases.SET_PLAYER_STATE: {
+      return {
+        ...state,
+        playerState: action.playerState,
+      };
+    }
+
+    case reducerCases.SET_LYRICS: {
+      return {
+        ...state,
+        currentTrackLyrics: action.currentTrackLyrics,
+      };
+    }
+
     default:
       return state;
   }
+
 };
 
 export default reducer;

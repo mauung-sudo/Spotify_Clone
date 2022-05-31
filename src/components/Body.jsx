@@ -115,7 +115,7 @@ const Body = ({headerBackground}) => {
                         
                         <div className="info">
                           <span className="name">{name}</span>
-                          <span>{artists}</span>
+                          <span>{artists.join(", ")}</span>
                         </div>
 
                       </div>

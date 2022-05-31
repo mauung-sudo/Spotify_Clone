@@ -12,10 +12,14 @@ const Navbar = ({navBackground}) => {
 
   return (
     <Container navBackground={navBackground}>
-      <div className="search_bar">
-        <FaSearch />
-        <input type="text" placeholder="Artists, songs, or podcast"></input>
+      
+      <div className="logo">
+        <img
+          src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_CMYK_White.png"
+          alt="spotify-logo"
+        ></img>
       </div>
+
       <div className="avatar">
         <a href="#">
           <CgProfile />
@@ -31,12 +35,22 @@ const Container = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  height: 10vh;
+  height: 9vh;
   position: sticky;
   top: 0;
   transition: 0.3s ease-in-out;
   background-color: ${({ navBackground }) =>
     navBackground ? "#000000" : "none"};
+
+  .logo {
+    text-align: left;
+    width: 30%;
+    margin: 1.5rem 2rem;
+    img {
+      max-inline-size: 7rem;
+      block-size: auto;
+    }
+  }
 
   .search_bar {
     background-color: white;
@@ -55,9 +69,11 @@ const Container = styled.div`
       }
     }
   }
+
   .avatar {
+    height: 2rem;
     background-color: black;
-    padding: 0.3rem 0.4rem;
+    padding: 0.0rem 0.1rem;
     padding-right: 1rem;
     border-radius: 2rem;
     display: flex;
@@ -66,15 +82,15 @@ const Container = styled.div`
     a {
       display: flex;
       justify-content: center;
+      padding: 1rem;
       align-items: center;
-      gap: 0.5 rem;
+      gap: 0.5rem;
       text-decoration: none;
       color: white;
       font-weight: bold;
       svg {
         font-size: 1.3rem;
         background-color: #282828;
-        padding: 0.2rem;
         border-radius: 1rem;
         color: #c7c5c5;
       }
