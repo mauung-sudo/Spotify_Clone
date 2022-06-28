@@ -14,31 +14,36 @@ export default function Lyrics({footerBackground}) {
     <Container>
       {currentTrackLyrics ?? (
         <div className="skeleton">
-          <Skeleton />
           <Skeleton animation="wave" />
-          <Skeleton animation={false} />
+          <Skeleton animation="wave" />
+          <Skeleton animation="wave" />
+          <Skeleton animation="wave" />
+          <Skeleton animation="wave" />
         </div>
       )}
-      <CurrentTrack footerBackground={footerBackground}></CurrentTrack>
     </Container>
   );
 }
 
 const Container = styled.div`
-  margin: 5vh 5vw;
-  margin-bottom: 100vh;
-
-  align-items: center;
+  margin: auto;
+  padding-bottom: 12vh;
   color: white;
-  font-size: medium;
-  font-weight: bold;
-  line-height: 2rem;
+  font-size: larger;
+  font-weight: bolder;
+  text-shadow: 1px 0px 3px #000;
+  outline-color: black;
+  line-height: 2.5rem;
+
+  -webkit-text-stroke-width: 0.5px;
+  -webkit-text-stroke-color: black;
+
 
   //for lineeeeee break!!
   white-space: pre;
 
   .skeleton {
-    align-items: center;
+    justify-content: center;
     width: 50vw;
   }
 `;

@@ -1,5 +1,22 @@
 import React from "react";
 import styled from "styled-components";
+import {Fab} from "@mui/material";
+import  NavigateNextRoundedIcon from "@mui/icons-material/NavigateNextRounded";
+
+var colors = {
+  zero: "#00FF83",
+  one: "#00DC63 ",
+  two: "#00CC68",
+  three: "#00FF83",
+  four: "#00FF83",
+  five: "#00DC63",
+  six: "#00CC68",
+  seven: "#00CC68",
+  eight: "#00CC68",
+};
+
+var gradient = `linear-gradient(to bottom right,${colors.zero},${colors.one},${colors.two},${colors.three},${colors.four})`;
+
 
 const Container = styled.div`
   display: flex;
@@ -10,17 +27,16 @@ const Container = styled.div`
   width: 100vw;
   background-color: #1db954;
   gap: 5rem;
-  img{
-      height:20vh;
+  img {
+    height: 20vh;
   }
-  button{
-      padding: 1rem 5rem;
-      border-radius: 5rem;
-      border: none;
-      background-color:black;
-      color: #49f585;
-      font-size: 1.4rem;
-      cursor: pointer;
+  button {
+    background-color: black;
+    color: #00ff83;
+    font-size: 1.2rem;
+    font-weight: 600;
+
+    cursor: pointer;
   }
 `;
 
@@ -44,12 +60,20 @@ function Login() {
   };
 
   return (
-    <Container>
+    <Container style={{ backgroundImage: `${gradient}` }}>
       <img
         src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_CMYK_Black.png"
         alt="spotify-logo"
       ></img>
-      <button onClick={handleLogin}>Connect to Spotify</button>
+      <Fab
+        variant="extended"
+        size="large"
+        onClick={handleLogin}
+        aria-label="Login"
+      >
+        Connect to Spotify
+        <NavigateNextRoundedIcon />
+      </Fab>
     </Container>
   );
 }

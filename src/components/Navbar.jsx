@@ -1,18 +1,18 @@
 import React from "react";
 import styled from "styled-components";
-import { FaSearch } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 import { useStateProvider } from "../utils/StateProvider";
+
+import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 
 const Navbar = ({navBackground}) => {
 
   //userInfo from Spotify.jsx useEffect
-  const [{ userInfo }] = useStateProvider();
+  const [{ userInfo,currentlyPlaying }] = useStateProvider();
 
 
   return (
     <Container navBackground={navBackground}>
-      
       <div className="logo">
         <img
           src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_CMYK_White.png"
@@ -20,12 +20,19 @@ const Navbar = ({navBackground}) => {
         ></img>
       </div>
 
+    <div className="pills">
+
       <div className="avatar">
         <a href="#">
           <CgProfile />
-          <span>{userInfo?.userName}</span>
+          <span>{userInfo ? userInfo.userName : "..."}</span>
         </a>
       </div>
+        <div className="compare">
+
+          <DarkModeRoundedIcon sx={{color:"#ffffff"}}/>
+        </div>
+  </div>
     </Container>
   );
 };
@@ -37,10 +44,15 @@ const Container = styled.div`
   padding: 1rem;
   height: 9vh;
   position: sticky;
+
   top: 0;
   transition: 0.3s ease-in-out;
   background-color: ${({ navBackground }) =>
-    navBackground ? "#000000" : "none"};
+    navBackground ?  "rgba(0,0,0,0.9)"
+ : "none"};
+ border-bottom-left-radius: 0.8rem;
+ border-bottom-right-radius: 0.8rem;
+ z-index: 1;
 
   .logo {
     text-align: left;
@@ -73,7 +85,7 @@ const Container = styled.div`
   .avatar {
     height: 2rem;
     background-color: black;
-    padding: 0.0rem 0.1rem;
+    padding: 0rem 0.1rem;
     padding-right: 1rem;
     border-radius: 2rem;
     display: flex;
@@ -94,6 +106,19 @@ const Container = styled.div`
         border-radius: 1rem;
         color: #c7c5c5;
       }
+    }
+  }
+
+  .pills {
+    display: flex;
+    gap: 1rem;
+    justify-content:center ;
+    .compare {
+      background-color: black;
+      border-radius: 1rem;
+      align-content:center;
+      width: 2rem;
+      height: 2rem;
     }
   }
 `;

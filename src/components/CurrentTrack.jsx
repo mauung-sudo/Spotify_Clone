@@ -4,21 +4,43 @@ import axios from "axios";
 
 import { reducerCases } from "../utils/Constants";
 import { useStateProvider } from "../utils/StateProvider";
-//for web scraping
-import { parse } from "node-html-parser";
-import { decode } from "html-entities";
+import TransitionSnackbar from "./TransitionSnackbar";
 
 import { getLyrics, getSong } from "genius-lyrics-api";
 import searchSong from "genius-lyrics-api/lib/searchSong";
 
 //@MUI
-import { Fab } from "@mui/material";
+import {
+  Icon,
+  SpeedDial,
+  SpeedDialAction,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 import LyricsIcon from "@mui/icons-material/Lyrics";
+import TranslateIcon from "@mui/icons-material/Translate";
+
+function SpeedDialActionIcon(props) {
+  return (
+    <Icon>
+      <Typography>{props.innerText}</Typography>
+    </Icon>
+  );
+}
 
 export default function CurrentTrack({ footerBackground }) {
-  const [{ token, currentlyPlaying }, dispatch] = useStateProvider();
+  const [{ token, currentlyPlaying, speedDialActions }, dispatch] =
+    useStateProvider();
+
+  const [selectedLanguage, setLanguage] = useState();
+  const [snackbarState, openSnackbar] = useState(false);
+  const [loading, setLoading] = React.useState(false);
 
   const getCurrentTrack = async (translationVer) => {
+    setLoading(true);
+
+    console.log("Get current track:", translationVer);
+
     const response = await axios.get(
       "https://api.spotify.com/v1/me/player/currently-playing",
       {
@@ -33,23 +55,38 @@ export default function CurrentTrack({ footerBackground }) {
 
     if (response.data !== "") {
       const { item } = response.data;
-
+      
       const currentlyPlaying = {
         id: item.id,
         name: item.name,
         artists: item.artists.map((artist) => artist.name),
         image: item.album.images[2].url,
+        album: item.album.name,
         duration: item.duration_ms,
       };
+
+      dispatch({ type: reducerCases.SET_PLAYING, currentlyPlaying });
 
       console.log(
         "SPOTIFY API: ",
         currentlyPlaying.name,
         "\n",
         currentlyPlaying.artists,
-        "\n",
-        currentlyPlaying.image
-      );
+        "\n"
+        );
+        
+      const regexList = {
+        feat: /(feat.*)/i,
+        with: /(with*)/i,
+      };
+
+      var featuring_removed_title = currentlyPlaying.name
+      .replace(regexList.feat, "")
+      .slice(0, -1);
+      
+        console.log("FT removed: ",featuring_removed_title);
+
+      var currentTrackLyrics;
 
       const options = {
         apiKey:
@@ -58,128 +95,221 @@ export default function CurrentTrack({ footerBackground }) {
         artist: currentlyPlaying.artists,
         optimizeQuery: true,
       };
-      var currentTrackLyrics;
+
+      //GET SONG LYRICS
+      const getSongLyrics = () => {
+        getSong(options).then((song) => {
+          if (song) {
+            console.log(`SONGGG: URL: ${song.url}`);
+            console.log("LYRICS: ", song.title);
+
+            currentTrackLyrics = song.lyrics;
+          } else {
+            //display error message in the place of currentTrackLyrics
+            currentTrackLyrics = "Can't find lyrics :'(";
+            console.log("CAN'T GET SONG");
+          }
+
+          dispatch({
+            type: reducerCases.SET_LYRICS,
+            currentTrackLyrics,
+          });
+        });
+      };
+
+      if (translationVer === "default") {
+        searchSong(options).then((searchResult) => {
+          console.log("SEARCH RES: ", searchResult);
+          var count1 = -1;
+          for (const key of searchResult) {
+            count1++;
+            console.log(count1);
+            console.log(key.title.search(options.title));
+
+            if (
+              key.title.search(
+               featuring_removed_title
+              ) === 0
+            ) {
+              getLyrics(key.url).then((lyrics) => {
+                currentTrackLyrics = lyrics;
+                dispatch({
+                  type: reducerCases.SET_LYRICS,
+                  currentTrackLyrics,
+                });
+              });
+              break;
+            }
+          }
+          if (count1 === searchResult.length - 1) {
+            getSongLyrics();
+          }
+        });
+      }
+
       //look for (Romanized) (Japanses Ver) (English Translation)
-      searchSong(options).then((searchResult) => {
-        console.log("SEARCH RES: ", searchResult);
+      if (translationVer !== "default" && translationVer !== undefined) {
+        searchSong(options).then((searchResult) => {
+          console.log("SEARCH RES: ", searchResult);
 
-        switch (translationVer) {
-          case searchResult.search("(English Translation)"): {
-            //look for Eng ver
-            //TO-DO: call getSong
+          /*If lyrics can't be found,
+        modify songName query in options 
+        such as (feat. ) (remix) (with artistName1,artistName2) (Language Versions)
+        which are at the end of songName query and can result in inaccurate searchResults*/
+          if (searchResult === null) {
+            options.title = featuring_removed_title;
+            console.log(options.title);
           }
-          case searchResult.search("(Romanized)"): {
-            //look for Romanized ver
-            //TO-DO: call getSong
-          }
 
-          default:
-            getSong(options).then((song) => {
-              if (song) {
-                console.log(`
-                  SONGGG: 
-                  
-                  title: ${song.title}
-                  url: ${song.url}
-                  `);
+          var count = -1;
+          for (const key of searchResult) {
+            count++;
+            console.log(count);
 
-                currentTrackLyrics = song.lyrics;
-                console.log("LYRICS: ", song);
+            if (key.title.search(translationVer) === -1) {
+              console.log(key.title.search(translationVer), " ", key.title);
+              continue;
+            } else {
+              console.log(key.title.search(translationVer));
+              console.log("Translation Ver: ", key.title);
 
+              getLyrics(key.url).then((lyrics) => {
+                currentTrackLyrics = lyrics;
                 dispatch({
                   type: reducerCases.SET_LYRICS,
                   currentTrackLyrics,
                 });
-              } else {
-                //display error message in the place of currentTrackLyrics
-                currentTrackLyrics = "Can't find lyrics :'(";
-                dispatch({
-                  type: reducerCases.SET_LYRICS,
-                  currentTrackLyrics,
-                });
+              });
+              console.log(key.url);
+              break;
+            }
+          }
 
-                console.log("CAN'T GET SONG");
-              }
-
-              //check if the song has japanese letters
-              // var regex =
-              //   /[\u3000-\u303F]|[\u3040-\u309F]|[\u30A0-\u30FF]|[\uFF00-\uFFEF]|[\u4E00-\u9FAF]|[\u2605-\u2606]|[\u2190-\u2195]|\u203B/g;
-              // var input = song.title;
-
-              // if (regex.test(input)) {
-              //   input = input.replace(regex, "");
-              //   console.log(input);
-              //   console.log(input.split(" ")[4].replace("(", "").replace(")", ""));
-              //   console.log("Japanese characters found");
-              // } else {
-              //   console.log("No Japanese characters");
-              // }
+          //If u Can't find translation
+          // even at the last iteration of searchResult
+          if (count === searchResult.length - 1) {
+            dispatch({
+              type: reducerCases.SELECTED_LANGUAGE,
+              translationVer,
             });
-        }
-      });
 
-      dispatch({ type: reducerCases.SET_PLAYING, currentlyPlaying });
+            openSnackbar(true);
+            console.log(translationVer, " is not found");
+          }
+        });
+      } else if (translationVer === undefined) {
+        getSongLyrics();
+      }
     } else {
       console.log("NO SONG IS PLAYING ON SPOTIFY AT THE MOMENT");
     }
+
+    setLoading(false);
   };
 
-  // }, [token, dispatch]);
-
   useEffect(() => {
-    getCurrentTrack();
+    console.log("USE EFFECT:", selectedLanguage);
+    getCurrentTrack(selectedLanguage);
   }, [token, dispatch]);
+
+  const [open, setOpen] = React.useState(false);
+  const speedDialClick = () => setOpen(true);
+  const speedDialClose = () => {
+    setOpen(false);
+    getCurrentTrack(selectedLanguage);
+
+    console.log("speed dial closed");
+  };
+
+  var language;
+  var count = 0;
+
+  const actionButtonClose = (event) => {
+    language = event.target.innerHTML.toString();
+
+    switch (language) {
+      case "EN":
+        setLanguage("(English Translation)");
+        break;
+      case "RO":
+        setLanguage("(Romanized)");
+        break;
+      case "JP":
+        setLanguage("(Japanese Translations)");
+        break;
+      case "DE":
+        setLanguage("default");
+        break;
+    }
+    console.log(count, "from event: ", selectedLanguage);
+
+    getCurrentTrack(selectedLanguage);
+    speedDialClose();
+
+    count++;
+    console.log("count:", count);
+  };
 
   return (
     <Container footerBackground={footerBackground}>
       {currentlyPlaying ? (
         <div className="track">
-          <div className="track_image">
-            <img src={currentlyPlaying.image} alt="track-album-cover" />
-          </div>
+          <img
+            src={currentlyPlaying.image}
+            alt="track-album-cover"
+            crossOrigin="anonymous"
+          />
 
           <div className="track_info">
             <h4>{currentlyPlaying.name}</h4>
             <h6>{currentlyPlaying.artists.join(", ")}</h6>
+            <h6>{currentlyPlaying.album}</h6>
           </div>
+
+          <TransitionSnackbar
+            snackbarState={snackbarState}
+            openSnackbar={openSnackbar}
+            selectedLanguage={selectedLanguage}
+          />
         </div>
       ) : (
-        <div>NO SONG IS PLAYING ON SPOTIFY AT THE MOMENT . . </div>
+        <div>NO SONG IS PLAYING ON SPOTIFY AT THE MOMENT . . . </div>
       )}
 
-      <Fab
-        color="secondary"
-        size="medium"
-        aria-label="get lyrics"
-        onClick={() => {
-          console.log("Callback from FAB: ");
-          getCurrentTrack();
-        }}
+      <SpeedDial
+        ariaLabel="SpeedDial controlled open example"
+        sx={{ position: "absolute", bottom: 12, right: 16 }}
+        icon={
+          <>
+            {loading ? (
+              <CircularProgress
+                size={68}
+                sx={{
+                  position: "absolute",
+                  zIndex: 1,
+                  color: "#ffffff",
+                }}
+              />
+            ) : (
+              <></>
+            )}
+            <LyricsIcon />
+          </>
+        }
+        onClose={speedDialClose}
+        onOpen={speedDialClick}
+        open={open}
       >
-        <LyricsIcon></LyricsIcon>
-      </Fab>
-      <Fab
-        color="secondary"
-        size="medium"
-        aria-label="get lyrics"
-        onClick={() => {
-          console.log("Callback from FAB: ");
-          getCurrentTrack();
-        }}
-      >
-        ROM
-      </Fab>
-      <Fab
-        color="secondary"
-        size="medium"
-        aria-label="get english translation"
-        onClick={() => {
-          console.log("Callback from FAB: ");
-          getCurrentTrack();
-        }}
-      >
-        ENG
-      </Fab>
+        {speedDialActions.map((speedDialAction) => (
+          <SpeedDialAction
+            key={speedDialAction.name}
+            icon={<SpeedDialActionIcon innerText={speedDialAction.innerText} />}
+            tooltipTitle={speedDialAction.name}
+            tooltipOpen
+            onClick={actionButtonClose}
+          />
+        ))}
+      </SpeedDial>
     </Container>
   );
 }
@@ -189,59 +319,50 @@ const Container = styled.div`
   justify-content: space-between;
   align-items: center;
 
-  bottom: 10vh;
   position: sticky;
+  bottom: 10vh;
 
-  background-color: black;
-  border: #b3b3b3 solid 1px;
+  background-color: rgba(0, 0, 0, 0.95);
+  color: white;
+  font-weight: 600;
+  box-shadow: 1px 0px 5px #202023;
   height: 10vh;
-  /* width: 40vh; */
   padding: 2rem 1.5rem;
-  margin: 0.2rem 1rem;
+  margin: 2rem 1rem;
   border-radius: 0.7rem;
   flex-direction: row;
   transition: 0.3s ease-out;
-  background-color: ${({ footerBackground }) =>
-    footerBackground ? "black" : "none"};
-
-  /* background-color: #181818;
-  height: 100%;
-  width: 100%;
-  border-top: 1px solid #282828;
-  display: grid;
-  align-items: center;
-  justify-content: center;
-  padding: 0 1rem; */
 
   button {
     border-radius: 5rem;
-    margin-left: 2rem;
+    margin-left: 0rem;
     border: none;
-    background-color: #181818;
-    color: white;
+    background-color: white;
+    color: #181818;
     font-size: 1rem;
     cursor: pointer;
 
     &:hover {
+      background-color: #181818;
       color: white;
     }
   }
   .track {
     display: flex;
+    flex-direction: row;
     align-items: center;
+
     gap: 1rem;
-    .track_image {
-      img {
-        margin: auto;
-        max-width: 8vh;
-        border-radius: 0.5rem;
-      }
+    img {
+      margin: auto;
+      max-width: 9vh;
+      border-radius: 0.4rem;
     }
     .track_info {
       display: flex;
 
       flex-direction: column;
-      gap: 0.3rem;
+      gap: 0.1rem;
       font-size: medium;
       h4 {
         color: white;

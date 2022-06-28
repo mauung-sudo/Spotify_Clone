@@ -7,8 +7,30 @@ export const initialState = {
   selectedPlaylistId: "7lkK4JetCQXMhJXyxwUWyp",
   selectedPlaylist: null,
   currentlyPlaying: null,
-  playerState: false,
+  snackBarState: false,
   currentTrackLyrics: null,
+  selectedLanguage: 'default',
+  speedDialActions: [
+    {
+      innerText: "EN",
+      name: "English",
+    },
+    {
+      innerText: "RO",
+      name: "Romanized",
+    },
+    {
+      innerText: "JP",
+      name: "Japanese",
+    },
+    {
+      innerText: "DE",
+      name: "Default",
+    },
+  ]
+
+
+  
 };
 
 const reducer = (state, action) => {
@@ -47,10 +69,10 @@ const reducer = (state, action) => {
       };
     }
 
-    case reducerCases.SET_PLAYER_STATE: {
+    case reducerCases.SET_SNACKBAR_STATE: {
       return {
         ...state,
-        playerState: action.playerState,
+        snackBarState: action.snackBarState,
       };
     }
 
@@ -60,6 +82,12 @@ const reducer = (state, action) => {
         currentTrackLyrics: action.currentTrackLyrics,
       };
     }
+     case reducerCases.SELECTED_LANGUAGE: {
+       return {
+         ...state,
+         selectedLanguage: action.selectedLanguage,
+       }
+     }
 
     default:
       return state;
